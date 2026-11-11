@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudentHub | Quản lý sinh viên</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #3730a3;
+            --ink: #172033;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --surface: #ffffff;
+            --bg: #f5f7fb;
+            --danger: #dc2626;
+            --success: #15803d;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            color: var(--ink);
+            background: var(--bg);
+            font: 15px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+        }
+        button, input { font: inherit; }
+        button { cursor: pointer; }
+        .app { min-height: 100vh; }
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px max(24px, calc((100% - 1180px) / 2));
+            color: white;
+            background: linear-gradient(110deg, #312e81, #4f46e5 60%, #6366f1);
+        }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand-mark {
+            display: grid; place-items: center; width: 40px; height: 40px;
+            border-radius: 12px; background: rgba(255,255,255,.18); font-size: 21px;
+        }
+        .brand strong { display: block; font-size: 18px; }
+        .brand small { color: #c7d2fe; }
+        .container { max-width: 1180px; margin: 0 auto; padding: 30px 24px 60px; }
+        .hero { display: flex; justify-content: space-between; gap: 20px; align-items: end; margin-bottom: 24px; }
+        h1, h2, p { margin-top: 0; }
+        h1 { margin-bottom: 6px; font-size: clamp(26px, 4vw, 36px); letter-spacing: -.04em; }
+        .hero p, .muted { color: var(--muted); }
+        .stats { display: flex; gap: 12px; }
+        .stat { min-width: 110px; padding: 14px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+        .stat strong { display: block; font-size: 24px; }
+        .stat span { color: var(--muted); font-size: 12px; }
+        .grid { display: grid; grid-template-columns: 340px 1fr; gap: 22px; align-items: start; }
+        .card { padding: 22px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 8px 26px rgba(15,23,42,.04); }
+        .card-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+        h2 { margin-bottom: 0; font-size: 18px; }
+        label { display: block; margin: 14px 0 6px; color: #334155; font-size: 13px; font-weight: 650; }
+        input {
+            width: 100%; padding: 11px 13px; color: var(--ink);
+            border: 1px solid #cbd5e1; border-radius: 10px; outline: none;
+        }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px #e0e7ff; }
+        .button-row { display: flex; gap: 9px; margin-top: 18px; }
+        .btn {
+            border: 0; border-radius: 10px; padding: 10px 14px; font-weight: 650;
+            transition: .15s ease; background: #eef2ff; color: var(--primary-dark);
+        }
+        .btn:hover { transform: translateY(-1px); filter: brightness(.98); }
+        .btn-primary { color: white; background: var(--primary); }
+        .btn-secondary { background: #f1f5f9; color: #475569; }
+        .btn-danger { color: var(--danger); background: #fef2f2; }
+        .btn-small { padding: 7px 10px; font-size: 12px; }
+        .hidden { display: none !important; }
+        .bulk-help { margin: 12px 0 0; color: var(--muted); font-size: 12px; }
+        .toolbar { display: flex; gap: 10px; margin-bottom: 16px; }
+        .search { flex: 1; position: relative; }
+        .search input { padding-left: 38px; }
+        .search span { position: absolute; top: 9px; left: 13px; color: var(--muted); }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 14px 10px; text-align: left; border-bottom: 1px solid var(--line); }
+        th { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; }
+        td { color: #334155; }
+        .avatar {
+            display: inline-grid; place-items: center; width: 32px; height: 32px;
+            margin-right: 9px; color: var(--primary-dark); background: #e0e7ff;
+            border-radius: 50%; font-weight: 750; vertical-align: middle;
+        }
+        .actions { white-space: nowrap; }
+        .empty { padding: 42px 10px; text-align: center; color: var(--muted); }
+        .toast {
+            position: fixed; right: 24px; bottom: 24px; max-width: 360px; padding: 13px 17px;
+            color: white; background: #1e293b; border-radius: 10px; box-shadow: 0 10px 25px #0f172a33;
+        }
+        .toast.error { background: var(--danger); }
+        .toast.success { background: var(--success); }
+        @media (max-width: 850px) {
+            .hero { align-items: start; flex-direction: column; }
+            .grid { grid-template-columns: 1fr; }
+        }
+        @media print {
+            .topbar, .form-card, .toolbar, .actions, .stats { display: none !important; }
+            body, .card { background: white; box-shadow: none; border: 0; }
+            .container { padding: 0; }
+            .grid { display: block; }
+            .card { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-mark">🎓</div>
+            <div><strong>StudentHub</strong><small>Quản lý sinh viên</small></div>
+        </div>
+        <button class="btn" id="print-top">🖨 In danh sách</button>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <div>
+                <h1>Danh sách sinh viên</h1>
+                <p>Quản lý thông tin sinh viên nhanh chóng và đơn giản.</p>
+            </div>
+            <div class="stats">
+                <div class="stat"><strong id="total-count">0</strong><span>Tổng sinh viên</span></div>
+                <div class="stat"><strong id="shown-count">0</strong><span>Đang hiển thị</span></div>
+            </div>
+        </section>
+
+        <div class="grid">
+            <section class="card form-card">
+                <div class="card-header">
+                    <h2 id="form-title">Thêm sinh viên</h2>
+                    <button class="btn btn-secondary btn-small hidden" id="cancel-edit">Hủy sửa</button>
+                </div>
+                <form id="student-form">
+                    <input type="hidden" id="student-id">
+                    <label for="name">Họ và tên</label>
+                    <input id="name" required placeholder="Nguyễn Văn An">
+                    <label for="email">Email</label>
+                    <input id="email" type="email" required placeholder="an@example.com">
+                    <div class="button-row">
+                        <button class="btn btn-primary" type="submit" id="submit-btn">Thêm sinh viên</button>
+                        <button class="btn btn-secondary" type="reset">Xóa nhập</button>
+                    </div>
+                </form>
+
+                <hr style="border:0;border-top:1px solid var(--line);margin:24px 0">
+                <h2>Thêm nhiều sinh viên</h2>
+                <p class="bulk-help">Mỗi dòng một sinh viên theo định dạng: <b>Họ tên, email</b></p>
+                <textarea id="bulk-input" rows="5" placeholder="Nguyễn Văn A, a@example.com&#10;Trần Thị B, b@example.com" style="width:100%;margin-top:10px;padding:11px;border:1px solid #cbd5e1;border-radius:10px;resize:vertical"></textarea>
+                <button class="btn btn-primary" id="bulk-btn" style="margin-top:10px">+ Thêm danh sách</button>
+            </section>
+
+            <section class="card">
+                <div class="card-header">
+                    <h2>Danh sách hiện tại</h2>
+                    <button class="btn btn-secondary btn-small" id="refresh-btn">↻ Làm mới</button>
+                </div>
+                <div class="toolbar">
+                    <div class="search"><span>⌕</span><input id="search" placeholder="Tìm theo tên hoặc email..."></div>
+                    <button class="btn btn-secondary" id="print-btn">In</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Sinh viên</th><th>Email</th><th>Mã số</th><th class="actions">Thao tác</th></tr></thead>
+                        <tbody id="student-list"></tbody>
+                    </table>
+                    <div class="empty hidden" id="empty">Chưa có sinh viên phù hợp.</div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <div id="toast" class="toast hidden" role="status"></div>
+</div>
+
+<script>
+    const form = document.getElementById("student-form");
+    const list = document.getElementById("student-list");
+    const empty = document.getElementById("empty");
+    const search = document.getElementById("search");
+    let students = [];
+
+    async function request(url, options = {}) {
+        const response = await fetch(url, {
+            headers: {"Content-Type": "application/json"},
+            ...options
+        });
+        const text = await response.text();
+        let body = {};
+        try { body = text ? JSON.parse(text) : {}; } catch (_) { body = {message: text}; }
+        if (!response.ok) throw new Error(body.message || body.error || "Có lỗi xảy ra.");
+        return body;
+    }
+
+    function showToast(message, type = "success") {
+        const toast = document.getElementById("toast");
+        toast.textContent = message;
+        toast.className = "toast " + type;
+        setTimeout(() => toast.classList.add("hidden"), 3200);
+    }
+
+    async function loadStudents() {
+        try {
+            students = await request("/api/students");
+            render();
+        } catch (error) { showToast(error.message, "error"); }
+    }
+
+    function render() {
+        const keyword = search.value.trim().toLowerCase();
+        const visible = students.filter(student =>
+            student.name.toLowerCase().includes(keyword) ||
+            student.email.toLowerCase().includes(keyword));
+        document.getElementById("total-count").textContent = students.length;
+        document.getElementById("shown-count").textContent = visible.length;
+        empty.classList.toggle("hidden", visible.length !== 0);
+        list.innerHTML = visible.map(student => `
+            <tr>
+                <td><span class="avatar">${escapeHtml(student.name.charAt(0).toUpperCase())}</span><b>${escapeHtml(student.name)}</b></td>
+                <td>${escapeHtml(student.email)}</td>
+                <td>#${student.id}</td>
+                <td class="actions">
+                    <button class="btn btn-secondary btn-small" onclick="editStudent(${student.id})">Sửa</button>
+                    <button class="btn btn-danger btn-small" onclick="deleteStudent(${student.id})">Xóa</button>
+                </td>
+            </tr>`).join("");
+    }
+
+    function escapeHtml(value) {
+        return value.replace(/[&<>"']/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[char]));
+    }
+
+    form.addEventListener("submit", async event => {
+        event.preventDefault();
+        const id = document.getElementById("student-id").value;
+        const data = {name: document.getElementById("name").value.trim(), email: document.getElementById("email").value.trim()};
+        try {
+            await request(id ? `/api/students/${id}` : "/api/students", {method: id ? "PUT" : "POST", body: JSON.stringify(data)});
+            showToast(id ? "Đã cập nhật sinh viên." : "Đã thêm sinh viên.");
+            resetForm();
+            await loadStudents();
+        } catch (error) { showToast(error.message, "error"); }
+    });
+
+    window.editStudent = id => {
+        const student = students.find(item => item.id === id);
+        if (!student) return;
+        document.getElementById("student-id").value = student.id;
+        document.getElementById("name").value = student.name;
+        document.getElementById("email").value = student.email;
+        document.getElementById("form-title").textContent = "Sửa sinh viên";
+        document.getElementById("submit-btn").textContent = "Lưu thay đổi";
+        document.getElementById("cancel-edit").classList.remove("hidden");
+        document.getElementById("name").focus();
+    };
+
+    window.deleteStudent = async id => {
+        const student = students.find(item => item.id === id);
+        if (!student || !confirm(`Xóa sinh viên "${student.name}"?`)) return;
+        try {
+            await request(`/api/students/${id}`, {method: "DELETE"});
+            showToast("Đã xóa sinh viên.");
+            await loadStudents();
+        } catch (error) { showToast(error.message, "error"); }
+    };
+
+    function resetForm() {
+        form.reset();
+        document.getElementById("student-id").value = "";
+        document.getElementById("form-title").textContent = "Thêm sinh viên";
+        document.getElementById("submit-btn").textContent = "Thêm sinh viên";
+        document.getElementById("cancel-edit").classList.add("hidden");
+    }
+
+    document.getElementById("cancel-edit").addEventListener("click", resetForm);
+    document.getElementById("refresh-btn").addEventListener("click", loadStudents);
+    search.addEventListener("input", render);
+    document.getElementById("print-btn").addEventListener("click", () => window.print());
+    document.getElementById("print-top").addEventListener("click", () => window.print());
+    document.getElementById("bulk-btn").addEventListener("click", async () => {
+        const rows = document.getElementById("bulk-input").value.split("\n").map(row => row.trim()).filter(Boolean);
+        const data = rows.map(row => {
+            const separator = row.lastIndexOf(",");
+            if (separator < 1) throw new Error("Mỗi dòng phải có dạng: Họ tên, email");
+            return {name: row.slice(0, separator).trim(), email: row.slice(separator + 1).trim()};
+        });
+        if (!data.length) return showToast("Hãy nhập ít nhất một sinh viên.", "error");
+        try {
+            await request("/api/students/bulk", {method: "POST", body: JSON.stringify(data)});
+            document.getElementById("bulk-input").value = "";
+            showToast(`Đã thêm ${data.length} sinh viên.`);
+            await loadStudents();
+        } catch (error) { showToast(error.message, "error"); }
+    });
+    loadStudents();
+</script>
+</body>
+</html>
